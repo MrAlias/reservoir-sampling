@@ -2,17 +2,28 @@ package sampling
 
 import "testing"
 
-var result int64
+var (
+	randInt64   int64
+	randFloat64 float64
+)
+
+func BenchmarkRNG(b *testing.B) {
+	b.Run("Int63", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			randInt64 = rng.Int63()
+		}
+	})
+
+	b.Run("Float64", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			randFloat64 = rng.Float64()
+		}
+	})
+}
 
 func BenchmarkSampler(b *testing.B) {
 	const n = 1024
 	const value = 1
-
-	b.Run("BaseRandomInt64", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			result = rng.Int63()
-		}
-	})
 
 	b.Run("R", func(b *testing.B) {
 		sampler := NewR(n)
