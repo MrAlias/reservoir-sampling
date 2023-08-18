@@ -22,62 +22,30 @@ func BenchmarkRNG(b *testing.B) {
 }
 
 func BenchmarkSampler(b *testing.B) {
+	b.Run("R", benchSampler(func(n int) reservoir { return NewR(n) }))
+	b.Run("L", benchSampler(func(n int) reservoir { return NewL(n) }))
+	b.Run("X", benchSampler(func(n int) reservoir { return NewX(n) }))
+	b.Run("Z", benchSampler(func(n int) reservoir { return NewZ(n, 40) }))
+}
+
+type reservoir interface {
+	Offer(float64)
+}
+
+func benchSampler(r func(int) reservoir) func(b *testing.B) {
 	const n = 1024
 	const value = 1
+	sampler := r(n)
 
-	b.Run("R", func(b *testing.B) {
-		sampler := NewR(n)
+	// Measure random insert, not initial loading.
+	for i := 0; i < n; i++ {
+		sampler.Offer(value)
+	}
 
-		// Measure random insert, not initial loading.
-		for i := 0; i < n; i++ {
-			sampler.Offer(value)
-		}
-
+	return func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			sampler.Offer(value)
 		}
-	})
-
-	b.Run("L", func(b *testing.B) {
-		sampler := NewL(n)
-
-		// Measure random insert, not initial loading.
-		for i := 0; i < n; i++ {
-			sampler.Offer(value)
-		}
-
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			sampler.Offer(value)
-		}
-	})
-
-	b.Run("X", func(b *testing.B) {
-		sampler := NewX(n)
-
-		// Measure random insert, not initial loading.
-		for i := 0; i < n; i++ {
-			sampler.Offer(value)
-		}
-
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			sampler.Offer(value)
-		}
-	})
-
-	b.Run("Z", func(b *testing.B) {
-		sampler := NewZ(n, 40)
-
-		// Measure random insert, not initial loading.
-		for i := 0; i < n; i++ {
-			sampler.Offer(value)
-		}
-
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			sampler.Offer(value)
-		}
-	})
+	}
 }
