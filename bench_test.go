@@ -30,6 +30,7 @@ func BenchmarkSampler(b *testing.B) {
 
 type reservoir interface {
 	Offer(float64)
+	mean() float64
 }
 
 func benchSampler(r func(int) reservoir) func(b *testing.B) {
